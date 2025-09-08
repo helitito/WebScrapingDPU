@@ -78,7 +78,7 @@ def salvar_em_excel():
     if df.empty:
         print("❌ Nenhum dado foi extraído. Verifique os seletores ou o carregamento da página.")
     else:
-        data_hoje = datetime.today().strftime('%Y-%m-%d')
+        data_hoje = datetime.today().strftime('%d-%m-%Y')
         nome_arquivo = f"jurisdicoes_trf3_{data_hoje}.xlsx"
         df.to_excel(nome_arquivo, index=False)
         print(f"✅ Arquivo Excel gerado com sucesso: {nome_arquivo}")

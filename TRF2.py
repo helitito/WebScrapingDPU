@@ -1,6 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+from datetime import datetime
+
 
 # URL do site
 url = "https://www.trf2.jus.br/jfes/institucional/jurisdicao"
@@ -16,20 +18,18 @@ estado = "ES"
 # Lista para armazenar os dados
 dados = []
 
-# Busca por todos os elementos <p>
-paragrafos = soup.find_all("p")
-
-# Variável para armazenar a subseção atual
+# Inicializa subseção atual
 subsecao_atual = None
 
-for p in paragrafos:
-    texto = p.get_text(strip=True)
+# Percorre todos os elementos da área principal
+for tag in soup.find_all(["h4", "p"]):
+    texto = tag.get_text(strip=True)
 
-    # Se o parágrafo não contém "Cidades atendidas", é provavelmente o nome da subseção
-    if "Cidades atendidas:" not in texto and len(texto) > 0:
+    # Se for um título de subseção (geralmente em <strong>)
+    if texto and "Cidades atendidas:" not in texto and len(texto) < 100:
         subsecao_atual = texto
 
-    # Se contém as cidades, extraí-las e associar à subseção atual
+    # Se for um parágrafo com cidades
     elif "Cidades atendidas:" in texto and subsecao_atual:
         cidades_texto = texto.split("Cidades atendidas:")[1]
         cidades = [cidade.strip() for cidade in cidades_texto.split(",")]
@@ -38,14 +38,18 @@ for p in paragrafos:
             dados.append({
                 "TRF": trf,
                 "Cidade": cidade,
-                "Jurisdição": subsecao_atual,
+                "Subseção": subsecao_atual,
                 "Estado": estado
             })
+
+#Data de hoje
+data_hoje = datetime.today().strftime('%Y-%m-%d')  # Formato: 2025-09-08
+nome_arquivo = f"jurisdicao_trf2_{data_hoje}.xlsx"
 
 # Cria DataFrame
 df = pd.DataFrame(dados)
 
 # Exporta para Excel
-df.to_excel("jurisdicao_trf2.xlsx", index=False)
+df.to_excel(nome_arquivo, index=False)
 
 print("Arquivo Excel gerado com sucesso!")
